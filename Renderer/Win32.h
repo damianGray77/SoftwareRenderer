@@ -6,49 +6,52 @@
 #include <mmsystem.h>
 
 #include "resource.h"
-#include "WinBuffer.h"
+#include "Buffer.h"
 
-class WindowsHandler {
+class Win32 {
 public:
 	HWND window;
 	HINSTANCE instance;
-	HDC context;
+	HDC front_dc;
+	HDC back_dc;
+	HBITMAP dib;
+	BITMAPINFO info;
+
 	RECT rect;
 	ulong width;
 	ulong height;
-	char color_depth;
+	ushort color_depth;
 	bool fullscreen;
 	LPCWSTR cname;
 	LPCWSTR wname;
-	float delta;
 	int cores;
-	WinBuffer buffer;
+	Buffer *buffer;
 	MSG msg;
-	bool resizing = false;
 
 	bool (*resize_callback)(int, int);
 	void (*draw)();
-	void (*keypress_callback)(WPARAM);
+	void (*keypress_callback)(uint);
 
-	static WindowsHandler *self;
+	static Win32 *self;
 
-	WindowsHandler();
-	~WindowsHandler() { }
+	Win32();
+	~Win32() { }
 
 	static LRESULT CALLBACK proc(HWND, uint, WPARAM, LPARAM);
 
 	bool init();
+	bool init_window();
+	bool init_buffer();
 	void unload();
+	void unload_buffer();
 	bool full_screen();
 	bool swap_buffers();
 	bool resize(ulong, ulong);
-	bool handle_messages();
-	void show_fps();
-	bool clamp_fps(const int);
-	void update();
+	bool update();
 
 	void close();
-
+	ulong get_system_ticks();
+	void set_title(wchar_t *);
 private:
 	LRESULT CALLBACK _proc(HWND, uint, WPARAM, LPARAM);
 };

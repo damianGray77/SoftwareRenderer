@@ -3,23 +3,31 @@
 
 SoftwareRenderer renderer;
 Camera camera;
-WindowsHandler window;
+Win32 window;
+
+bool running = true;
 
 int main(int argc, char *argv[]) {
 	init();
 
+	renderer.buffer = &buffer;
+	window.buffer = &buffer;
 	window.resize_callback = resize;
 	window.keypress_callback = keypress;
 	window.draw = draw;
 
-	if (renderer.init() && window.init()) {
+	if (
+		renderer.init()
+		&& buffer.init(window.width, window.height)
+		&& window.init()
+	) {
 		camera.set_pos(0.0f, 0.0f, 9.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 
-		renderer.bits = (ulong *)window.buffer.bits;
 		run();
 	}
 
 	window.unload();
+	buffer.unload();
 	renderer.unload();
 
 	return 0;
@@ -95,16 +103,22 @@ void init_lookups() {
 
 void run() {
 	do {
-		if (!window.handle_messages()) {
-			break;
-		}
+		calc_fps();
 
-		window.update();
-	} while (true);
+		running = window.update();
+
+		update();
+
+		draw();
+	} while (running);
 }
 
 inline bool resize(int w, int h) {
-	return renderer.resize(w, h, (ulong *)window.buffer.bits);
+	if (!buffer.init(w, h)) { return false; }
+	bool res = renderer.resize(w, h);
+	draw();
+
+	return res;
 }
 
 void keypress(uint wparam) {
@@ -115,10 +129,59 @@ void keypress(uint wparam) {
 	}
 }
 
-inline void draw() {
+inline void update() {
 	camera.update();
 
 	renderer.world = camera.look();
+}
 
+inline void draw() {
 	renderer.render();
+
+	window.swap_buffers();
+}
+
+void calc_fps() {
+	static int fps = 0;
+	static float last = 0;
+	static float frame = 0;
+	static ulong total = 0;
+	static float ticks = 0;
+
+	const float current = window.get_system_ticks() * 0.001f;
+
+	frame = current;
+	++fps;
+
+	if (current - last > 1) {
+		last = current;
+		total += fps;
+
+		static wchar_t frame_rate[50];
+		swprintf(frame_rate, sizeof(wchar_t) * 50, L"FPS: %d Avg.: %d", fps, CEIL(total / ticks));
+		window.set_title(frame_rate);
+
+		fps = 0;
+		++ticks;
+	}
+}
+
+bool clamp_fps(const int rate) {
+	static float last = (float)window.get_system_ticks();
+	static float elapsed = 0;
+
+	const float current = (float)window.get_system_ticks();
+	const float delta = current - last;
+	const float fps = 1000.0f / rate;
+
+	elapsed += delta;
+	last = current;
+
+	if (elapsed > fps) {
+		elapsed -= fps;
+
+		return true;
+	}
+
+	return false;
 }

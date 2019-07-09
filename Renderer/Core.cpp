@@ -6,7 +6,7 @@ std::vector<Vertex3> wverts;
 std::vector<Vertex3uv> sverts;
 std::vector<Triangle3t> tris;
 
-const char *texture_files[] = { "texture_256.bmp" };
+const char *texture_files[] = { "texture.bmp" };
 
 float sins[SINCOSMAX] = { 0 };
 float coss[SINCOSMAX] = { 0 };

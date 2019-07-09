@@ -1,13 +1,14 @@
 #include "stdafx.h"
-#include "WindowsHandler.h"
+#include "Win32.h"
 
-WindowsHandler *WindowsHandler::self = NULL;
+Win32 *Win32::self = NULL;
 
-WindowsHandler::WindowsHandler() {
+Win32::Win32() {
 	self = this;
 
 	window = NULL;
-	context = NULL;
+	front_dc = NULL;
+	back_dc = NULL;
 	instance = NULL;
 
 	width = 640;
@@ -17,19 +18,18 @@ WindowsHandler::WindowsHandler() {
 	fullscreen = true;
 	cname = L"SoftwareRenderer";
 	wname = L"SoftwareRenderer";
-	delta = 0.0f;
 	cores = 1;
 
 	memset(&msg, 0, sizeof(msg));
 }
 
-LRESULT CALLBACK WindowsHandler::proc(HWND window, uint msg, WPARAM wparam, LPARAM lparam) {
+// This is a static method. This is my workaround to get it to play nicely within an instanced object.
+LRESULT CALLBACK Win32::proc(HWND window, uint msg, WPARAM wparam, LPARAM lparam) {
 	return self->_proc(window, msg, wparam, lparam);
 }
 
-LRESULT CALLBACK WindowsHandler::_proc(HWND window, uint msg, WPARAM wparam, LPARAM lparam) {
+LRESULT CALLBACK Win32::_proc(HWND window, uint msg, WPARAM wparam, LPARAM lparam) {
 	switch (msg) {
-		//case WM_SIZING:
 		case WM_SIZE:
 			{
 				short raw_w = LOWORD(lparam);
@@ -43,22 +43,7 @@ LRESULT CALLBACK WindowsHandler::_proc(HWND window, uint msg, WPARAM wparam, LPA
 				}
 			}
 
-			InvalidateRect(window, NULL, FALSE);
-
 			return 0;
-		case WM_ERASEBKGND: return 0;
-		/*case WM_PAINT:
-			if(clamp_fps(30)) {
-				show_fps();
-
-				paint_callback();
-
-				if (!swap_buffers()) {
-					PostQuitMessage(0);
-				}
-			}
-
-			return 0;*/
 		case WM_KEYDOWN:
 			keypress_callback(wparam);
 
@@ -72,20 +57,44 @@ LRESULT CALLBACK WindowsHandler::_proc(HWND window, uint msg, WPARAM wparam, LPA
 	return DefWindowProc(window, msg, wparam, lparam);
 }
 
-bool WindowsHandler::init() {
-	timeBeginPeriod(2);
+bool Win32::init() {
+	timeBeginPeriod(1);
 
 	HWND console = GetConsoleWindow();
 	ShowWindow(console, SW_HIDE);
 
+	if (!init_window()) {
+		MessageBoxW(window, L"Cannot init window!", L"Error", MB_OK | MB_ICONERROR);
+		return false;
+	}
+
+	if (!init_buffer()) {
+		MessageBoxW(window, L"Cannot init buffer!", L"Error", MB_OK | MB_ICONERROR);
+		return false;
+	}
+
+	ShowWindow(window, SW_SHOWNORMAL);
+	UpdateWindow(window);
+
+	SetFocus(window);
+	if (!fullscreen) {
+		SetForegroundWindow(window);
+	}
+
+	GetClientRect(window, &rect);
+
+	return true;
+}
+
+bool Win32::init_window() {
 	instance = (HINSTANCE)GetModuleHandleW(NULL);
 
 	WNDCLASSEXW wc = {
-		sizeof(WNDCLASSEX)
+		  sizeof(WNDCLASSEX)
 		, CS_HREDRAW | CS_VREDRAW
 		, proc
-		, 0L
-		, 0L
+		, 0
+		, 0
 		, instance
 		, LoadIconW(instance, MAKEINTRESOURCE(IDI_RENDERER))
 		, LoadCursorW(nullptr, IDC_ARROW)
@@ -107,60 +116,94 @@ bool WindowsHandler::init() {
 		if (!full_screen()) { return false; }
 
 		ShowCursor(false);
-	}
-	else {
+	} else {
 		style = WS_OVERLAPPEDWINDOW | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
 		style_ex = WS_EX_CLIENTEDGE;
 	}
 
 	AdjustWindowRectEx(&rect, style, false, style_ex);
 
-	window = CreateWindowExW(style_ex, cname, wname, style, CW_USEDEFAULT, CW_USEDEFAULT, rect.right - rect.left, rect.bottom - rect.top, NULL, NULL, wc.hInstance, NULL);
+	window = CreateWindowExW(style_ex, wc.lpszClassName, wname, style, CW_USEDEFAULT, CW_USEDEFAULT, rect.right - rect.left, rect.bottom - rect.top, NULL, NULL, wc.hInstance, NULL);
 	if (!window) { return false; }
-
-	this->window = window;
 
 	SYSTEM_INFO sysinfo;
 	GetSystemInfo(&sysinfo);
-
 	cores = sysinfo.dwNumberOfProcessors;
 
-	context = GetDC(window);
+	front_dc = GetDC(window);
 
-	if (!buffer.init(context, width, height)) {
-		MessageBoxW(window, L"Cannot init buffer!", L"Error", MB_OK | MB_ICONERROR);
-		return false;
-	}
+	memset(&info, 0, sizeof(info));
 
-	ShowWindow(window, SW_SHOWNORMAL);
-	UpdateWindow(window);
-
-	SetFocus(window);
-	if (!fullscreen) {
-		SetForegroundWindow(window);
-	}
+	info.bmiHeader = {
+		  sizeof(BITMAPINFOHEADER)
+		, (long)width
+		, -(long)height
+		, 1
+		, color_depth
+		, BI_RGB
+		, width * height * 4UL
+		, 0
+		, 0
+		, 0
+		, 0
+	};
 
 	return true;
 }
 
-void WindowsHandler::unload() {
+bool Win32::init_buffer() {
+	info.bmiHeader.biWidth = (long)width;
+	info.bmiHeader.biHeight = -(long)height;
+	info.bmiHeader.biSizeImage = width * height * 4UL;
+
+	void *bits;
+
+	dib = CreateDIBSection(front_dc, &info, DIB_RGB_COLORS, &bits, NULL, 0);
+	if (NULL == dib) { return false; }
+
+	buffer->bits = (ulong *)bits;
+
+	back_dc = CreateCompatibleDC(front_dc);
+	if (NULL == back_dc) { return false; }
+
+	SelectObject(back_dc, dib);
+
+	return true;
+}
+
+void Win32::unload() {
+	timeEndPeriod(1);
+
 	if (fullscreen) {
 		ChangeDisplaySettingsW(NULL, 0);
 		ShowCursor(true);
 	}
 
-	buffer.unload();
+	unload_buffer();
 
 	UnregisterClassW(cname, instance);
 }
 
-bool WindowsHandler::full_screen() {
+void Win32::unload_buffer() {
+	if (NULL != back_dc) {
+		DeleteDC(back_dc);
+		back_dc = NULL;
+	}
+
+	if (NULL != dib) {
+		DeleteObject(dib);
+		dib = NULL;
+	}
+
+	buffer->unload();
+}
+
+bool Win32::full_screen() {
 	DEVMODE settings;
 	memset(&settings, 0, sizeof(settings));
 
 	if (!EnumDisplaySettingsW(NULL, ENUM_CURRENT_SETTINGS, &settings)) {
 		MessageBoxW(NULL, L"Could Not Enum Display Settings", L"Error", MB_OK);
-
 		return false;
 	}
 
@@ -168,61 +211,41 @@ bool WindowsHandler::full_screen() {
 	settings.dmPelsHeight = height;
 	settings.dmColor = color_depth;
 
-
 	int result = ChangeDisplaySettingsW(&settings, CDS_FULLSCREEN);
 
 	if (DISP_CHANGE_SUCCESSFUL != result) {
 		MessageBoxW(NULL, L"Display Mode Not Compatible", L"Error", MB_OK);
-
 		return false;
 	}
 
 	return true;
 }
 
-bool WindowsHandler::swap_buffers() {
-	GetClientRect(window, &rect);
+bool Win32::swap_buffers() {
+	/*return 0 == StretchDIBits(front_dc
+		, 0, 0, width, height
+		, 0, 0, width, height
+		, buffer->bits
+		, &info
+		, DIB_RGB_COLORS
+		, SRCCOPY
+	);*/
 
-	if (!BitBlt(context, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, buffer.dc, 0, 0, SRCCOPY)) {
-		MessageBoxW(window, L"Cannot swap buffers!", L"Error", MB_OK | MB_ICONERROR);
-		return false;
-	}
-
-	return true;
+	return BitBlt(front_dc, 0, 0, width, height, back_dc, 0, 0, SRCCOPY);
 }
 
-bool WindowsHandler::resize(ulong w, ulong h) {
+bool Win32::resize(ulong w, ulong h) {
 	width = w;
 	height = h;
+
 	GetWindowRect(window, &rect);
 
-	buffer.unload();
-	if (!buffer.init(context, w, h)) {
-		MessageBoxW(window, L"Cannot reinit buffer!", L"Error", MB_OK | MB_ICONERROR);
-		PostQuitMessage(0);
-		return false;
-	}
-
-	return true;
+	unload_buffer();
+	return init_buffer();
 }
 
-void WindowsHandler::update() {
-	/*if (!clamp_fps(120)) {
-		Sleep(0);
-		return;
-	}*/
-
-	show_fps();
-
-	draw();
-
-	if (!swap_buffers()) {
-		PostQuitMessage(0);
-	}
-}
-
-bool WindowsHandler::handle_messages() {
-	while (PeekMessageW(&msg, NULL, 0U, 0U, PM_REMOVE)) {
+bool Win32::update() {
+	while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE)) {
 		if (WM_QUIT == msg.message) { return false; }
 
 		TranslateMessage(&msg);
@@ -232,46 +255,14 @@ bool WindowsHandler::handle_messages() {
 	return true;
 }
 
-void WindowsHandler::close() {
+void Win32::close() {
 	SendMessageW(window, WM_CLOSE, 0, 0);
 }
 
-void WindowsHandler::show_fps() {
-	static int fps = 0;
-	static float last = 0;
-	static float frame = 0;
-
-	const float current = timeGetTime() * 0.001f;
-
-	frame = current;
-	++fps;
-
-	if (current - last > 1) {
-		last = current;
-
-		wchar_t frame_rate[50];
-		swprintf(frame_rate, sizeof(wchar_t) * 50, L"FPS: %d", fps);
-		SetWindowTextW(window, frame_rate);
-		fps = 0;
-	}
+ulong Win32::get_system_ticks() {
+	return timeGetTime();
 }
 
-bool WindowsHandler::clamp_fps(const int rate) {
-	static float last = timeGetTime();
-	static float elapsed = 0;
-
-	const float current = timeGetTime();
-	const float delta = current - last;
-	const float fps = 1000.0f / rate;
-
-	elapsed += delta;
-	last = current;
-
-	if (elapsed > fps) {
-		elapsed -= fps;
-
-		return true;
-	}
-
-	return false;
+void Win32::set_title(wchar_t *str) {
+	SetWindowTextW(window, str);
 }

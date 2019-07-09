@@ -20,8 +20,8 @@ bool WinBuffer::init(HDC context, ulong w, ulong h) {
 		, (ulong)(w * h * 4)
 		, 0L
 		, 0L
-		, (ulong)0
-		, (ulong)0
+		, 0UL
+		, 0UL
 	};
 
 	dib = CreateDIBSection(context, &info, DIB_RGB_COLORS, &bits, NULL, 0x0);

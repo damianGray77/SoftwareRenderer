@@ -17,12 +17,29 @@
 #define FLOOR(f) ((int)(f) - (f < (int)(f)))
 #define MIN(x, y) (x <= y ? x : y)
 #define MAX(x, y) (x >= y ? x : y)
-#define CLAMP(x, min, max) (MAX(min, MIN(max, x)))
+#define CLAMP(x, min, max) (x <= min ? min : x >= max ? max : x)
+#define WRAP(x, min, max) (x <= min ? x + max : x >= max ? x - max : x)
 
 typedef int fixed8;
 typedef int fixed12;
 typedef int fixed16;
 typedef int fixed24;
+
+typedef int64_t int64;
+typedef int32_t int32;
+typedef int16_t int16;
+typedef int8_t  int8;
+
+typedef uint64_t uint64;
+typedef uint32_t uint32;
+typedef uint16_t uint16;
+typedef uint8_t  uint8;
+
+typedef unsigned long long ulonglong;
+typedef unsigned long ulong;
+typedef unsigned int uint;
+typedef unsigned short ushort;
+typedef unsigned char uchar;
 
 inline fixed8 fl_f8(const float f) {
 	return (fixed8)(f * 256.0f);

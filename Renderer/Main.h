@@ -2,7 +2,8 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-#include "WindowsHandler.h"
+#include "Buffer.h"
+#include "Win32.h"
 #include "Camera.h"
 #include "Vertex3uv.h"
 #include "Edge3uv.h"
@@ -15,5 +16,10 @@ void run();
 inline bool resize(int, int);
 void keypress(uint);
 inline void draw();
+inline void update();
+void calc_fps();
+bool clamp_fps(const int);
+
+Buffer buffer;
 
 #endif
