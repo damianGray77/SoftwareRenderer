@@ -4,6 +4,7 @@
 
 #include "Buffer.h"
 #include "Win32.h"
+#include "FPS.h"
 #include "Camera.h"
 #include "Vertex3uv.h"
 #include "Edge3uv.h"
@@ -17,8 +18,6 @@ inline bool resize(int, int);
 void keypress(uint);
 inline void draw();
 inline void update();
-void calc_fps();
-bool clamp_fps(const int);
 
 Buffer buffer;
 

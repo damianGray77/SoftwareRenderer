@@ -132,6 +132,9 @@
     <ClInclude Include="Win32.h">
       <Filter>Header Files\Windows</Filter>
     </ClInclude>
+    <ClInclude Include="FPS.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core.cpp">
@@ -214,6 +217,9 @@
     </ClCompile>
     <ClCompile Include="Win32.cpp">
       <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="FPS.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -25,6 +25,7 @@
     <ClInclude Include="Color4f.h" />
     <ClInclude Include="Core.h" />
     <ClInclude Include="Edge3uv.h" />
+    <ClInclude Include="FPS.h" />
     <ClInclude Include="Main.h" />
     <ClInclude Include="Matrix3x3.h" />
     <ClInclude Include="Matrix4x4.h" />
@@ -56,6 +57,7 @@
     <ClCompile Include="Color4f.cpp" />
     <ClCompile Include="Core.cpp" />
     <ClCompile Include="Edge3uv.cpp" />
+    <ClCompile Include="FPS.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Matrix3x3.cpp" />
     <ClCompile Include="Matrix4x4.cpp" />
