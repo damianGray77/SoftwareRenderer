@@ -6,12 +6,20 @@
 #include "Edge3uv.h"
 #include "Triangle3t.h"
 #include <vector>
+#include <emmintrin.h>
 
 #define EPSILON 0 //1e-4
 #define PI 3.14159265358f
 #define SINCOSMAX 32767
 
-#define SWAP(type, i, j) { type _temp_var = i; i = j; j = _temp_var; }
+template <class T>
+inline void SWAP(T *a, T *b) {
+	T temp = *a;
+	*a = *b;
+	*b = temp;
+}
+
+//#define SWAP(type, i, j) { type _temp_var = i; i = j; j = _temp_var; }
 #define ABS(x) ((x) < 0 ? -(x) : (x))
 #define CEIL(f) ((int)(f) + (f > (int)(f)))
 #define FLOOR(f) ((int)(f) - (f < (int)(f)))

@@ -16,6 +16,7 @@ class FPS {
 	float target;
 
 	wchar_t frame_rate[50];
+	uint str_size;
 
 	Win32 *window;
 public:

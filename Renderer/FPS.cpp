@@ -13,6 +13,8 @@ void FPS::init(Win32 *w) {
 	total_frames = 0;
 	seconds = 0;
 	target = 0;
+
+	str_size = sizeof(wchar_t) * 50;
 }
 
 void FPS::set_rate(const int rate) {
@@ -31,8 +33,7 @@ void FPS::update() {
 		frame_ticks -= target;
 
 		update_frame = true;
-	}
-	else {
+	} else {
 		update_frame = false;
 	}
 
@@ -40,7 +41,7 @@ void FPS::update() {
 		last_calc_ticks = current_ticks;
 		total_frames += frames_since;
 
-		swprintf(frame_rate, sizeof(wchar_t) * 50, L"FPS: %d Avg.: %d Ms/F: %f", frames_since, CEIL(total_frames / (float)seconds), 1000.0f / frames_since);
+		swprintf(frame_rate, str_size, L"FPS: %d Avg.: %d Ms/F: %f", frames_since, CEIL(total_frames / (float)seconds), 1000.0f / frames_since);
 		window->set_title(frame_rate);
 
 		frames_since = 0;

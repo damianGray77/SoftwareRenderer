@@ -257,6 +257,6 @@ ulong Win32::get_system_ticks() {
 	return timeGetTime();
 }
 
-void Win32::set_title(wchar_t *str) {
+void Win32::set_title(wchar_t *str) {	
 	SetWindowTextW(window, str);
 }

@@ -78,8 +78,8 @@ int SoftwareRenderer::backfacecull_and_clip() {
 
 	int clip_len = 0;
 
-	int len = tris.size();
-	for (int i = 0; i < len; ++i) {
+	uint len = (uint)tris.size();
+	for (uint i = 0; i < len; ++i) {
 		const Triangle3t t = tris[i];
 		const Vertex3uv v1 = sverts[t.v1];
 		const Vertex3uv v2 = sverts[t.v2];
@@ -120,26 +120,26 @@ int SoftwareRenderer::backfacecull_and_clip() {
 
 			if (minx < 0) {
 				slice_poly(bounds[3], bounds[0], left);		// { 0, h }, { 0, 0 }
-				SWAP(Vertex3uv *, clip_poly2, clip_poly1);
-				SWAP(int, cp2len, cp1len);
+				SWAP(&clip_poly2, &clip_poly1);
+				SWAP(&cp2len, &cp1len);
 			}
 
 			if (miny < 0) {
 				slice_poly(bounds[0], bounds[1], top);		// { 0, 0 }, { w, 0 }
-				SWAP(Vertex3uv *, clip_poly2, clip_poly1);
-				SWAP(int, cp2len, cp1len);
+				SWAP(&clip_poly2, &clip_poly1);
+				SWAP(&cp2len, &cp1len);
 			}
 
 			if (maxx > _w) {
 				slice_poly(bounds[1], bounds[2], right);	// { w, 0 }, { w, h }
-				SWAP(Vertex3uv *, clip_poly2, clip_poly1);
-				SWAP(int, cp2len, cp1len);
+				SWAP(&clip_poly2, &clip_poly1);
+				SWAP(&cp2len, &cp1len);
 			}
 
 			if (maxy > _h) {
 				slice_poly(bounds[2], bounds[3], bottom);	// { w, h }, { 0, h }
-				SWAP(Vertex3uv *, clip_poly2, clip_poly1);
-				SWAP(int, cp2len, cp1len);
+				SWAP(&clip_poly2, &clip_poly1);
+				SWAP(&cp2len, &cp1len);
 			}
 
 			for (int j = 2; j < cp1len; ++j) {
@@ -237,7 +237,7 @@ void SoftwareRenderer::render() {
 	//rz += 0.05f;  if (rz > SINCOSMAX) { rz -= SINCOSMAX; }
 
 	rx += 11.0f; if (rx > SINCOSMAX) { rx -= SINCOSMAX; }
-	ry += 2.5f; if (ry > SINCOSMAX) { ry -= SINCOSMAX; }
+	ry += 2.5f;  if (ry > SINCOSMAX) { ry -= SINCOSMAX; }
 	rz += 1.0f;  if (rz > SINCOSMAX) { rz -= SINCOSMAX; }
 
 	Matrix4x4 p;
@@ -249,20 +249,20 @@ void SoftwareRenderer::render() {
 	//Matrix4x4::rotate(p, 0, ry, 0);
 	//Matrix4x4::translate(p, 0, 0, 20.0f);
 
-	int vlen = verts.size();
-	for(int i = 0; i < vlen; ++i) {
+	uint vlen = (uint)verts.size();
+	for(uint i = 0; i < vlen; ++i) {
 		project(i, p);
 	}
 
 	int tlen = backfacecull_and_clip();
 	float itlen = 1.0f / (float)tlen; 
 	for(int i = 0; i < tlen; ++i) {
-		//draw_triangle_texture(ctris[i]);
+		draw_triangle_texture_a(ctris[i]);
 
 		
 		//float c = (float)(i + 1) * itlen;
-		Triangle3uv tri = ctris[i];
-		draw_triangle_flat(tri.v1, tri.v2, tri.v3, 0x00ff0000); // RGBf(c, c, c));
+		//Triangle3uv tri = ctris[i];
+		//draw_triangle_flat(tri.v1, tri.v2, tri.v3, 0x00ff0000); // RGBf(c, c, c));
 		//draw_triangle_flat_fixed(tri.v1, tri.v2, tri.v3, 0x00ff0000);
 	}
 }
@@ -334,8 +334,8 @@ void SoftwareRenderer::draw_line(const Vertex2 &v1, const Vertex2 &v2, const ulo
 
 	if (ABS(dy) > ABS(dx)) {
 		if (vy1 > vy2) {
-			SWAP(float, vy1, vy2);
-			SWAP(float, vx1, vx2);
+			SWAP(&vy1, &vy2);
+			SWAP(&vx1, &vx2);
 		}
 
 		if (vy2 < 0 || vy1 > _h) {
@@ -415,8 +415,8 @@ void SoftwareRenderer::draw_line(const Vertex2 &v1, const Vertex2 &v2, const ulo
 		}
 	} else {
 		if (vx1 > vx2) {
-			SWAP(float, vx1, vx2);
-			SWAP(float, vy1, vy2);
+			SWAP(&vx1, &vx2);
+			SWAP(&vy1, &vy2);
 		}
 
 		if (vx2 < 0 || vx1 > _w) {
@@ -497,113 +497,10 @@ void SoftwareRenderer::draw_line(const Vertex2 &v1, const Vertex2 &v2, const ulo
 	}
 }
 
-//void SoftwareRenderer::draw_triangle_flat(Vertex2 &v1, Vertex2 &v2, Vertex2 &v3, const ulong c) {
-//	if (v1.y > v2.y) { SWAP(Vertex2, v1, v2); }
-//	if (v1.y > v3.y) { SWAP(Vertex2, v1, v3); }
-//	if (v2.y > v3.y) { SWAP(Vertex2, v2, v3); }
-//
-//	const int yy1 = CEIL(v1.y + 0.5f);
-//	const int yy3 = CEIL(v3.y + 0.5f) - 1;
-//
-//	const ulong pitch = buffer->width;
-//
-//	if (yy3 <= yy1) { return; }
-//
-//	const int yy2 = CEIL(v2.y + 0.5f);
-//
-//	const fixed8 x1 = int_f8(FLOOR(v1.x + 0.5f)), y1 = int_f8(FLOOR(v1.y + 0.5f));
-//	const fixed8 x2 = int_f8(FLOOR(v2.x + 0.5f)), y2 = int_f8(FLOOR(v2.y + 0.5f));
-//	const fixed8 x3 = int_f8(FLOOR(v3.x + 0.5f)), y3 = int_f8(FLOOR(v3.y + 0.5f));
-//	
-//	bool xswap = false;
-//
-//	fixed8 sx2, sx1 = f8_div(x3 - x1, y3 - y1);
-//	fixed8 xx2, xx1 = x1;
-//
-//	//Span* s;
-//
-//	if (yy2 > yy1) {
-//		sx2 = f8_div(x2 - x1, y2 - y1);
-//
-//		if (sx2 < sx1) {
-//			SWAP(fixed8, sx1, sx2);
-//			xswap = true;
-//		}
-//
-//		xx1 = x1;
-//		xx2 = x1;
-//
-//		for (int y = yy1; y < yy2; ++y) {
-//			Span* s = spans + y;
-//
-//			if (xx1 >= xx2) {
-//				s->x1 = f8_int(xx2);
-//				s->x2 = f8_int(xx1);
-//			} else {
-//				s->x1 = f8_int(xx1);
-//				s->x2 = f8_int(xx2);
-//			}
-//
-//			xx1 += sx1;
-//			xx2 += sx2;
-//		}
-//
-//		if (xswap) {
-//			xx1 = xx2;
-//			sx1 = sx2;
-//		}
-//	} else if (x2 < x1) {
-//		xswap = true;
-//		xx2 = x1;
-//		sx2 = sx1;
-//	}
-//
-//	if (yy3 > yy2) {
-//		sx2 = f8_div(x3 - x2, y3 - y2);
-//
-//		if (xswap) {
-//			SWAP(fixed8, sx1, sx2);
-//			xx1 = x2;
-//		} else {
-//			xx2 = x2;
-//		}
-//
-//		for (int y = yy2; y <= yy3; ++y) {
-//			Span* s = spans + y;
-//
-//			if (xx1 >= xx2) {
-//				s->x1 = f8_int(xx2);
-//				s->x2 = f8_int(xx1);
-//			} else {
-//				s->x1 = f8_int(xx1);
-//				s->x2 = f8_int(xx2);
-//			}
-//
-//			xx1 += sx1;
-//			xx2 += sx2;
-//		}
-//	}
-//	
-//	ulong *ybits = buffer->bits + yy1 * pitch;
-//	for (int y = yy1; y <= yy3; ++y) {
-//		const Span* s = &spans[y];
-//
-//		int xx1 = s->x1;
-//		int xx2 = s->x2 - 1;
-//
-//		for (int x = xx1; x <= xx2; ++x) {
-//			ybits[x] = c;
-//
-//		}
-//
-//		ybits += pitch;
-//	}
-//}
-
 void SoftwareRenderer::draw_triangle_flat(Vertex2 &v1, Vertex2 &v2, Vertex2 &v3, const ulong c) {
-	if (v1.y > v2.y) { SWAP(Vertex2, v1, v2); }
-	if (v1.y > v3.y) { SWAP(Vertex2, v1, v3); }
-	if (v2.y > v3.y) { SWAP(Vertex2, v2, v3); }
+	if (v1.y > v2.y) { SWAP(&v1, &v2); }
+	if (v1.y > v3.y) { SWAP(&v1, &v3); }
+	if (v2.y > v3.y) { SWAP(&v2, &v3); }
 
 	const int yy1 = CEIL(v1.y);
 	const int yy2 = CEIL(v2.y);
@@ -624,14 +521,15 @@ void SoftwareRenderer::draw_triangle_flat(Vertex2 &v1, Vertex2 &v2, Vertex2 &v3,
 		sx2 = (x2 - x1) / (y2 - y1);
 
 		if (sx2 < sx1) {
-			SWAP(float, sx1, sx2);
+			SWAP(&sx1, &sx2);
 			xswap = true;
 		}
 
 		xx1 = x1;
 		xx2 = x1;
 
-		for (int y = yy1; y < yy2; ++y) {
+		int ye = yy2 - 1;
+		for (int y = yy1; y <= ye; ++y) {
 			Span *s = &spans[y];
 			s->x1 = CEIL(xx1);
 			s->x2 = FLOOR(xx2);
@@ -654,7 +552,7 @@ void SoftwareRenderer::draw_triangle_flat(Vertex2 &v1, Vertex2 &v2, Vertex2 &v3,
 		sx2 = (x3 - x2) / (y3 - y2);
 
 		if (xswap) {
-			SWAP(float, sx1, sx2);
+			SWAP(&sx1, &sx2);
 			xx1 = x2;
 		} else {
 			xx2 = x2;
@@ -687,77 +585,120 @@ void SoftwareRenderer::draw_triangle_flat(Vertex2 &v1, Vertex2 &v2, Vertex2 &v3,
 	}
 }
 
-void SoftwareRenderer::draw_triangle_flat_fixed(Vertex2 &v1, Vertex2 &v2, Vertex2 &v3, const ulong c) {
-	if (v1.y > v2.y) { SWAP(Vertex2, v1, v2); }
-	if (v1.y > v3.y) { SWAP(Vertex2, v1, v3); }
-	if (v2.y > v3.y) { SWAP(Vertex2, v2, v3); }
+void SoftwareRenderer::draw_triangle_texture_a(Triangle3uv &t) {
+	if (t.v1.y > t.v2.y) { SWAP(&t.v1, &t.v2); }
+	if (t.v1.y > t.v3.y) { SWAP(&t.v1, &t.v3); }
+	if (t.v2.y > t.v3.y) { SWAP(&t.v2, &t.v3); }
 
-	const int yy1 = CEIL(v1.y);
-	const int yy2 = CEIL(v2.y);
-	const int yy3 = CEIL(v3.y);
+	const int yy1 = CEIL(t.v1.y);
+	const int yy2 = CEIL(t.v2.y);
+	const int yy3 = CEIL(t.v3.y);
 
 	if (yy3 <= yy1) { return; }
 
-	const fixed20 x1 = fl_f20(v1.x), y1 = fl_f20(v1.y);
-	const fixed20 x2 = fl_f20(v2.x), y2 = fl_f20(v2.y);
-	const fixed20 x3 = fl_f20(v3.x), y3 = fl_f20(v3.y);
+	Bitmap *texture = textures[t.texture_id];
+	const int tpitch = texture->w;
+	const int tw = texture->w - 1;
+	const int th = texture->h - 1;
+	const int *toffs = texture->yoffs;
+	const ulong *tdata = texture->data;
+
+	const float x1 = t.v1.x, y1 = t.v1.y;
+	const float x2 = t.v2.x, y2 = t.v2.y;
+	const float x3 = t.v3.x, y3 = t.v3.y;
+
+	const float u1 = t.v1.u * tw, v1 = t.v1.v * th;
+	const float u2 = t.v2.u * tw, v2 = t.v2.v * th;
+	const float u3 = t.v3.u * tw, v3 = t.v3.v * th;
 
 	bool xswap = false;
 
-	fixed20 sx2, sx1 = f20_div(x3 - x1, y3 - y1);
-	fixed20 xx2, xx1 = x1;
+	const float dy1 = 1.0f / (y3 - y1);
+	float sx2, sx1 = (x3 - x1) * dy1;
+	float su2, su1 = (u3 - u1) * dy1;
+	float sv2, sv1 = (v3 - v1) * dy1;
+	float xx2, xx1 = x1;
+	float uu2, uu1 = u1;
+	float vv2, vv1 = v1;
 
 	if (yy2 > yy1) {
-		sx2 = f20_div(x2 - x1, y2 - y1);
+		const float dy2 = 1.0f / (y2 - y1);
+		sx2 = (x2 - x1) * dy2;
 
 		if (sx2 < sx1) {
-			SWAP(fixed20, sx1, sx2);
+			su2 = su1; su1 = (u2 - u1) * dy2;
+			sv2 = sv1; sv1 = (v2 - v1) * dy2;
+
+			SWAP(&sx1, &sx2);
 			xswap = true;
 		}
+		else {
+			su2 = (u2 - u1) * dy2;
+			sv2 = (v2 - v1) * dy2;
+		}
 
-		xx1 = x1;
-		xx2 = x1;
+		xx1 = x1; xx2 = x1;
+		uu1 = u1; uu2 = u1;
+		vv1 = v1; vv2 = v1;
 
-		for (int y = yy1; y < yy2; ++y) {
+		int ye = yy2 - 1;
+		for (int y = yy1; y <= ye; ++y) {
+			const float dx = 1.0f / (xx2 - xx1);
+
 			Span *s = &spans[y];
-			const float x1 = f20_fl(xx1);
-			const float x2 = f20_fl(xx2);
-			s->x1 = CEIL(x1);
-			s->x2 = FLOOR(x2);
+			s->x1 = CEIL(xx1); s->x2 = FLOOR(xx2);
+			s->u = uu1; s->su = (uu2 - uu1) * dx;
+			s->v = vv1; s->sv = (vv2 - vv1) * dx;
 
-			xx1 += sx1;
-			xx2 += sx2;
+			xx1 += sx1; xx2 += sx2;
+			uu1 += su1; uu2 += su2;
+			vv1 += sv1; vv2 += sv2;
 		}
 
 		if (xswap) {
-			xx1 = xx2;
-			sx1 = sx2;
+			xx1 = xx2; sx1 = sx2;
+			uu1 = uu2; su1 = su2;
+			vv1 = vv2; sv1 = sv2;
 		}
 	} else if (x2 < x1) {
 		xswap = true;
-		xx2 = x1;
-		sx2 = sx1;
+		xx2 = x1; sx2 = sx1;
+		uu2 = u1; su2 = su1;
+		vv2 = v1; sv2 = sv1;
 	}
 
 	if (yy3 > yy2) {
-		sx2 = f20_div(x3 - x2, y3 - y2);
+		const float dy2 = 1.0f / (y3 - y2);
 
 		if (xswap) {
-			SWAP(fixed20, sx1, sx2);
+			sx2 = sx1; sx1 = (x3 - x2) * dy2;
+			su2 = su1; su1 = (u3 - u2) * dy2;
+			sv2 = sv1; sv1 = (v3 - v2) * dy2;
+
 			xx1 = x2;
+			uu1 = u2;
+			vv1 = v2;
 		} else {
+			sx2 = (x3 - x2) * dy2;
+			su2 = (u3 - u2) * dy2;
+			sv2 = (v3 - v2) * dy2;
+
 			xx2 = x2;
+			uu2 = u2;
+			vv2 = v2;
 		}
 
 		for (int y = yy2; y <= yy3; ++y) {
-			Span *s = &spans[y];
-			const float x1 = f20_fl(xx1);
-			const float x2 = f20_fl(xx2);
-			s->x1 = CEIL(x1);
-			s->x2 = FLOOR(x2);
+			const float dx = 1.0f / (xx2 - xx1);
 
-			xx1 += sx1;
-			xx2 += sx2;
+			Span *s = &spans[y];
+			s->x1 = CEIL(xx1); s->x2 = FLOOR(xx2);
+			s->u = uu1; s->su = (uu2 - uu1) * dx;
+			s->v = vv1; s->sv = (vv2 - vv1) * dx;
+
+			xx1 += sx1; xx2 += sx2;
+			uu1 += su1; uu2 += su2;
+			vv1 += sv1; vv2 += sv2;
 		}
 	}
 
@@ -765,527 +706,79 @@ void SoftwareRenderer::draw_triangle_flat_fixed(Vertex2 &v1, Vertex2 &v2, Vertex
 	ulong *ybits = buffer->bits + yy1 * pitch;
 
 	for (int y = yy1; y <= yy3; ++y) {
-		Span *s = &spans[y];
-		int xs = s->x1;
-		int xe = s->x2;
+		const Span *s = &spans[y];
+		const int xs = s->x1;
+		const int xe = s->x2;
+
+		const float su = s->su;
+		const float sv = s->sv;
+
+		float u = s->u;
+		float v = s->v;
 
 		for (int x = xs; x <= xe; ++x) {
-			//assert(0 != ybits[x]);
-			ybits[x] = 0 == ybits[x] ? 0x00ffffff : 0x00000000; // c;
+			int iu = (int)u; //iu = CLAMP(iu, 0, tw);
+			int iv = (int)v; //iv = CLAMP(iv, 0, th);
+
+			const ulong c = *(tdata + tpitch * iv + iu);
+			ybits[x] = c;
+
+			u += su;
+			v += sv;
 		}
 
 		ybits += pitch;
 	}
 }
 
-void SoftwareRenderer::draw_quad_flat(Vertex2 &v1, Vertex2 &v2, Vertex2 &v3, Vertex2 &v4, const ulong c) {
-	if (v1.y > v2.y) { SWAP(Vertex2, v1, v2); }
-	if (v1.y > v3.y) { SWAP(Vertex2, v1, v3); }
-	if (v1.y > v4.y) { SWAP(Vertex2, v1, v4); }
-	if (v2.y > v3.y) { SWAP(Vertex2, v2, v3); }
-	if (v2.y > v4.y) { SWAP(Vertex2, v2, v4); }
-	if (v3.y > v4.y) { SWAP(Vertex2, v3, v4); }
-
-	const int yy1 = CEIL(v1.y + 0.5f);
-	const int yy4 = CEIL(v4.y + 0.5f) - 1;
-
-	if (yy4 <= yy1) { return; }
-
-	const int yy2 = CEIL(v2.y + 0.5f);
-	const int yy3 = CEIL(v3.y + 0.5f);
-
-	const fixed8 x1 = fl_f8(v1.x + 0.5f), y1 = fl_f8(v1.y + 0.5f);
-	const fixed8 x2 = fl_f8(v2.x + 0.5f), y2 = fl_f8(v2.y + 0.5f);
-	const fixed8 x3 = fl_f8(v3.x + 0.5f), y3 = fl_f8(v3.y + 0.5f);
-	const fixed8 x4 = fl_f8(v4.x + 0.5f), y4 = fl_f8(v4.y + 0.5f);
-
-	bool xswap = false;
-
-	fixed8 sx3, sx2, sx1 = f8_div(x3 - x1, y3 - y1);
-	fixed8 xx3, xx2, xx1 = x1;
-
-	Span* s;
-
-	if (yy2 > yy1) {
-		sx2 = f8_div(x2 - x1, y2 - y1);
-
-		if (sx2 < sx1) {
-			SWAP(fixed8, sx1, sx2);
-			xswap = true;
-		}
-
-		xx1 = x1;
-		xx2 = x1;
-
-		for (int y = yy1; y < yy2; ++y) {
-			s = spans + y;
-			s->x1 = f8_int(xx1);
-			s->x2 = f8_int(xx2);
-
-			xx1 += sx1;
-			xx2 += sx2;
-		}
-
-		if (xswap) {
-			xx1 = xx2;
-			sx1 = sx2;
-		}
-	} else if (x2 < x1) {
-		xswap = true;
-		xx2 = x1;
-		sx2 = sx1;
-	}
-}
-
-/*void SoftwareRenderer::draw_triangle_flat2(int v1, int v2, int v3, const ulong c) {
-	if (v1.y > v2.y) { SWAP(Vertex2, v1, v2); }
-	if (v1.y > v3.y) { SWAP(Vertex2, v1, v3); }
-	if (v2.y > v3.y) { SWAP(Vertex2, v2, v3); }
-
-	const float x1 = v1.x, y1 = v1.y;
-	const float x2 = v2.x, y2 = v2.y;
-	const float x3 = v3.x, y3 = v3.y;
-
-	bool xswap = false;
-
-	const int yy1 = CEIL(y1);
-	const int yy2 = CEIL(y2);
-	const int yy3 = CEIL(y3);
-
-	float suby = ((float)yy1) - y1;
-	float sx2, sx1 = (x3 - x1) / (y3 - y1);
-	float xx2, xx1 = x1 + (sx1 * suby);
-
-	if (y2 != y1) {
-		sx2 = (x2 - x1) / (y2 - y1);
-
-		if (sx2 < sx1) {
-			SWAP(float, sx1, sx2);
-			xswap = true;
-		}
-
-		xx1 = x1 + (sx1 * suby);
-		xx2 = x1 + (sx2 * suby);
-
-		for (int y = yy1; y < yy2; ++y) {
-			spans[y].x1 = CEIL(xx1);
-			spans[y].x2 = CEIL(xx2);
-
-			xx1 += sx1;
-			xx2 += sx2;
-		}
-
-		if (xswap) {
-			xx1 = xx2;
-			sx1 = sx2;
-		}
-	}
-
-	if (y3 != y2) {
-		suby = ((float)yy2) - y2;
-		sx2 = (x3 - x2) / (y3 - y2);
-
-		if (xswap) {
-			xx1 = x2 + (sx2 * suby);
-			SWAP(float, sx1, sx2);
-		}
-		else {
-			xx2 = x2 + (sx2 * suby);
-		}
-
-		for (int y = yy2; y <= yy3; ++y) {
-			spans[y].x1 = CEIL(xx1);
-			spans[y].x2 = CEIL(xx2);
-
-			xx1 += sx1;
-			xx2 += sx2;
-		}
-	}
-
-	ulong *ybits = bits + yy1 * width; //yoffs[yy1];
-
-	for (int y = yy1; y <= yy3; ++y) {
-		for (int x = spans[y].x1; x < spans[y].x2; ++x) {
-			*(ybits + x) = c;
-		}
-
-		ybits += width;
-	}
-}*/
-
-void SoftwareRenderer::draw_triangle_color(Vertex2c &v1, Vertex2c &v2, Vertex2c &v3) {
-	if (v1.y > v2.y) { SWAP(Vertex2c, v1, v2); }
-	if (v1.y > v3.y) { SWAP(Vertex2c, v1, v3); }
-	if (v2.y > v3.y) { SWAP(Vertex2c, v2, v3); }
-
-	if (v3.y < v1.y) { return; }
-
-	const float vx1 = v1.x; const float vy1 = v1.y; const float vr1 = v1.c.r; const float vg1 = v1.c.g; const float vb1 = v1.c.b;
-	const float vx2 = v2.x; const float vy2 = v2.y; const float vr2 = v2.c.r; const float vg2 = v2.c.g; const float vb2 = v2.c.b;
-	const float vx3 = v3.x; const float vy3 = v3.y; const float vr3 = v3.c.r; const float vg3 = v3.c.g; const float vb3 = v3.c.b;
-
-	bool xswap = false;
-
-	const float dy1 = 1.0f / (vy3 - vy1);
-	float sx2, sx1 = (vx3 - vx1) * dy1;
-	float sr2, sr1 = (vr3 - vr1) * dy1;
-	float sg2, sg1 = (vg3 - vg1) * dy1;
-	float sb2, sb1 = (vb3 - vb1) * dy1;
-	float xx1, xx2, rr1, rr2, gg1, gg2, bb1, bb2;
-
-	const int y1 = (int)(vy1 + 0.5f);
-	const int y2 = (int)(vy2 + 0.5f);
-	const int y3 = (int)(vy3 + 0.5f);
-
-	if (vy1 != vy2) {
-		const float dy2 = 1.0f / (vy2 - vy1);
-
-		sx2 = (vx2 - vx1) * dy2;
-		sr2 = (vr2 - vr1) * dy2;
-		sg2 = (vg2 - vg1) * dy2;
-		sb2 = (vb2 - vb1) * dy2;
-
-		if (sx2 < sx1) {
-			SWAP(float, sx1, sx2);
-			SWAP(float, sr1, sr2);
-			SWAP(float, sg1, sg2);
-			SWAP(float, sb1, sb2);
-			xswap = true;
-		}
-
-		const float suby = (float)y1 - vy1;
-
-		xx1 = vx1 + sx1 * suby; xx2 = vx1 + sx2 * suby;
-		rr1 = vr1 + sr1 * suby; rr2 = vr1 + sr2 * suby;
-		gg1 = vg1 + sg1 * suby; gg2 = vg1 + sg2 * suby;
-		bb1 = vb1 + sb1 * suby; bb2 = vb1 + sb2 * suby;
-
-		for (int y = y1; y <= y2; ++y) {
-			spans[y].x1 = (int)(xx1 + 0.5f);
-			spans[y].x2 = (int)(xx2 + 0.5f);
-			spans[y].r1 = rr1; spans[y].r2 = rr2;
-			spans[y].g1 = gg1; spans[y].g2 = gg2;
-			spans[y].b1 = bb1; spans[y].b2 = bb2;
-
-			xx1 += sx1; xx2 += sx2;
-			rr1 += sr1; rr2 += sr2;
-			gg1 += sg1; gg2 += sg2;
-			bb1 += sb1; bb2 += sb2;
-		}
-
-		if (xswap) {
-			xx1 = xx2; rr1 = rr2; gg1 = gg2; bb1 = bb2;
-			sx1 = sx2; sr1 = sr2; sg1 = sg2; sb1 = sb2;
-		}
-	}
-	else {
-		xswap = vx2 < vx1;
-	}
-
-	if (vy2 != vy3) {
-		float dy2 = 1.0f / (vy3 - vy2);
-		sx2 = (vx3 - vx2) * dy2;
-		sr2 = (vr3 - vr2) * dy2;
-		sg2 = (vg3 - vg2) * dy2;
-		sb2 = (vb3 - vb2) * dy2;
-
-		const float suby = (float)y2 - vy2;
-		const float dy = vy2 == vy1 ? suby : (float)(y2 - y1);
-
-		if (xswap) {
-			SWAP(float, sx1, sx2);
-			SWAP(float, sr1, sr2);
-			SWAP(float, sg1, sg2);
-			SWAP(float, sb1, sb2);
-
-			xx1 = vx2 + sx1 * suby; xx2 = vx1 + sx2 * dy;
-			rr1 = vr2 + sr1 * suby; rr2 = vr1 + sr2 * dy;
-			gg1 = vg2 + sg1 * suby; gg2 = vg1 + sg2 * dy;
-			bb1 = vb2 + sb1 * suby; bb2 = vb1 + sb2 * dy;
-		}
-		else {
-			xx1 = vx1 + sx1 * dy; xx2 = vx2 + sx2 * suby;
-			rr1 = vr1 + sr1 * dy; rr2 = vr2 + sr2 * suby;
-			gg1 = vg1 + sg1 * dy; gg2 = vg2 + sg2 * suby;
-			bb1 = vb1 + sb1 * dy; bb2 = vb2 + sb2 * suby;
-		}
-
-		for (int y = y2; y <= y3; ++y) {
-			spans[y].x1 = (int)(xx1 + 0.5f);
-			spans[y].x2 = (int)(xx2 + 0.5f);
-			spans[y].r1 = rr1; spans[y].r2 = rr2;
-			spans[y].g1 = gg1; spans[y].g2 = gg2;
-			spans[y].b1 = bb1; spans[y].b2 = bb2;
-
-			xx1 += sx1; xx2 += sx2;
-			rr1 += sr1; rr2 += sr2;
-			gg1 += sg1; gg2 += sg2;
-			bb1 += sb1; bb2 += sb2;
-		}
-	}
-
-	ulong *ybits = buffer->bits + yoffs[y1];
-	ulong *xbits;
-	int x1, x2;
-	int xl, ex, xe;
-	float r, g, b;
-
-	for (int y = y1; y <= y3; ++y) {
-		x1 = spans[y].x1;
-		x2 = spans[y].x2;
-		r = spans[y].r1;
-		g = spans[y].g1;
-		b = spans[y].b1;
-
-		xbits = ybits + x1;
-
-		xl = x2 - x1;
-		ex = xl % 4;
-		xe = xl - ex;
-
-		const float dx = 1.0f / (x2 - x1);
-
-		const float srx = (spans[y].r2 - spans[y].r1) * dx;
-		const float sgx = (spans[y].g2 - spans[y].g1) * dx;
-		const float sbx = (spans[y].b2 - spans[y].b1) * dx;
-
-		for (int x = 0; x < xe; x += 4) {
-			*(xbits) = RGBf(r, g, b);
-			r += srx; g += sgx; b += sbx;
-
-			*(xbits + 1) = RGBf(r, g, b);
-			r += srx; g += sgx; b += sbx;
-
-			*(xbits + 2) = RGBf(r, g, b);
-			r += srx; g += sgx; b += sbx;
-
-			*(xbits + 3) = RGBf(r, g, b);
-			r += srx; g += sgx; b += sbx;
-
-			xbits += 4;
-		}
-		for (int x = 0; x <= ex; ++x) {
-			*(xbits + x) = RGBf(r, g, b);
-			r += srx; g += sgx; b += sbx;
-		}
-
-		ybits += buffer->width;
-	}
-}
-
-void SoftwareRenderer::draw_triangle_texture(Vertex2uv &v1, Vertex2uv &v2, Vertex2uv &v3, const int tid) {
-	if (v1.y > v2.y) { SWAP(Vertex2uv, v1, v2); }
-	if (v1.y > v3.y) { SWAP(Vertex2uv, v1, v3); }
-	if (v2.y > v3.y) { SWAP(Vertex2uv, v2, v3); }
-
-	if (v3.y < v1.y) { return; }
-
-	Bitmap *texture = textures[tid];
-	const int tw = texture->w - 1;
-	const int th = texture->h - 1;
-
-	const float v_x1 = v1.x; const float v_y1 = v1.y; const float v_u1 = v1.u * tw; const float v_v1 = v1.v * th;
-	const float v_x2 = v2.x; const float v_y2 = v2.y; const float v_u2 = v2.u * tw; const float v_v2 = v2.v * th;
-	const float v_x3 = v3.x; const float v_y3 = v3.y; const float v_u3 = v3.u * tw; const float v_v3 = v3.v * th;
-
-	bool xswap = false;
-
-	const float dy1 = 1.0f / (v_y3 - v_y1);
-	float sx2, sx1 = (v_x3 - v_x1) * dy1;
-	float su2, su1 = (v_u3 - v_u1) * dy1;
-	float sv2, sv1 = (v_v3 - v_v1) * dy1;
-	float xx1, xx2, uu1, uu2, vv1, vv2;
-
-	const int y1 = (int)(v_y1 + 0.5f);
-	const int y2 = (int)(v_y2 + 0.5f);
-	const int y3 = (int)(v_y3 + 0.5f);
-
-	if (v_y1 != v_y2) {
-		const float dy2 = 1.0f / (v_y2 - v_y1);
-
-		sx2 = (v_x2 - v_x1) * dy2;
-		su2 = (v_u2 - v_u1) * dy2;
-		sv2 = (v_v2 - v_v1) * dy2;
-
-		if (sx2 < sx1) {
-			SWAP(float, sx1, sx2);
-			SWAP(float, su1, su2);
-			SWAP(float, sv1, sv2);
-			xswap = true;
-		}
-
-		const float suby = (float)y1 - v_y1;
-
-		xx1 = v_x1 + sx1 * suby; xx2 = v_x1 + sx2 * suby;
-		uu1 = v_u1 + su1 * suby; uu2 = v_u1 + su2 * suby;
-		vv1 = v_v1 + sv1 * suby; vv2 = v_v1 + sv2 * suby;
-
-		for (int y = y1; y <= y2; ++y) {
-			spans[y].x1 = (int)(xx1 + 0.5f);
-			spans[y].x2 = (int)(xx2 + 0.5f);
-			spans[y].u1 = uu1; spans[y].u2 = uu2;
-			spans[y].v1 = vv1; spans[y].v2 = vv2;
-
-			xx1 += sx1; xx2 += sx2;
-			uu1 += su1; uu2 += su2;
-			vv1 += sv1; vv2 += sv2;
-		}
-
-		if (xswap) {
-			xx1 = xx2; uu1 = uu2; vv1 = vv2;
-			sx1 = sx2; su1 = su2; sv1 = sv2;
-		}
-	} else {
-		xswap = v_x2 < v_x1;
-	}
-
-	if (v_y2 != v_y3) {
-		float dy2 = 1.0f / (v_y3 - v_y2);
-		sx2 = (v_x3 - v_x2) * dy2;
-		su2 = (v_u3 - v_u2) * dy2;
-		sv2 = (v_v3 - v_v2) * dy2;
-
-		const float suby = (float)y2 - v_y2;
-		const float dy = v_y2 == v_y1 ? suby : (float)(y2 - y1);
-
-		if (xswap) {
-			SWAP(float, sx1, sx2);
-			SWAP(float, su1, su2);
-			SWAP(float, sv1, sv2);
-
-			xx1 = v_x2 + sx1 * suby; xx2 = v_x1 + sx2 * dy;
-			uu1 = v_u2 + su1 * suby; uu2 = v_u1 + su2 * dy;
-			vv1 = v_v2 + sv1 * suby; vv2 = v_v1 + sv2 * dy;
-		} else {
-			xx1 = v_x1 + sx1 * dy; xx2 = v_x2 + sx2 * suby;
-			uu1 = v_u1 + su1 * dy; uu2 = v_u2 + su2 * suby;
-			vv1 = v_v1 + sv1 * dy; vv2 = v_v2 + sv2 * suby;
-		}
-
-		for (int y = y2; y <= y3; ++y) {
-			spans[y].x1 = (int)(xx1 + 0.5f);
-			spans[y].x2 = (int)(xx2 + 0.5f);
-			spans[y].u1 = uu1; spans[y].u2 = uu2;
-			spans[y].v1 = vv1; spans[y].v2 = vv2;
-
-			xx1 += sx1; xx2 += sx2;
-			uu1 += su1; uu2 += su2;
-			vv1 += sv1; vv2 += sv2;
-		}
-	}
-
-	ulong *ybits = buffer->bits + yoffs[y1];
-	int x1, x2;
-	float u, v;
-	int iu, iv;
-
-	for (int y = y1; y <= y3; ++y) {
-		x1 = spans[y].x1;
-		x2 = spans[y].x2;
-		u = spans[y].u1;
-		v = spans[y].v1;
-
-
-
-		const float dx = 1.0f / (x2 - x1);
-
-		const float sux = (spans[y].u2 - spans[y].u1) * dx;
-		const float svx = (spans[y].v2 - spans[y].v1) * dx;
-		
-		for (int x = x1; x <= x2; ++x) {
-			iu = CEIL(u - 0.5f);
-			iv = CEIL(v - 0.5f);
-
-			/*if (iu >= tw || iu <= 0) {
-				iu = ABS(iu) & tw;
-			}
-			if (iv >= th || iv <= 0) {
-				iv = ABS(iv) & th;
-			}*/
-
-			const long toff = texture->yoffs[iv] + iu;
-
-			*(ybits + x) = texture->data[toff];
-
-			u += sux; v += svx;
-		}
-
-		ybits += buffer->width;
-	}
-}
-
-void SoftwareRenderer::draw_triangle_texture(Triangle3uv &t) {
-	if (t.v1.y > t.v2.y) { SWAP(Vertex3uv, t.v1, t.v2); }
-	if (t.v1.y > t.v3.y) { SWAP(Vertex3uv, t.v1, t.v3); }
-	if (t.v2.y > t.v3.y) { SWAP(Vertex3uv, t.v2, t.v3); }
+void SoftwareRenderer::draw_triangle_texture_p(Triangle3uv &t) {
+	if (t.v1.y > t.v2.y) { SWAP(&t.v1, &t.v2); }
+	if (t.v1.y > t.v3.y) { SWAP(&t.v1, &t.v3); }
+	if (t.v2.y > t.v3.y) { SWAP(&t.v2, &t.v3); }
 	
-	const int yy1 = CEIL(t.v1.y + 0.5f);
-	const int yy3 = CEIL(t.v3.y + 0.5f) - 1;
+	const int yy1 = CEIL(t.v1.y);
+	const int yy2 = CEIL(t.v2.y);
+	const int yy3 = CEIL(t.v3.y);
 
 	if (yy3 <= yy1) { return; }
 
-	const int yy2 = CEIL(t.v2.y + 0.5f);
-
 	Bitmap *texture = textures[t.texture_id];
+	const int tpitch = texture->w;
 	const int tw = texture->w - 1;
 	const int th = texture->h - 1;
 	const int *toffs = texture->yoffs;
 	const ulong *tdata = texture->data;
 
-	const fixed8 x1 = fl_f8(t.v1.x + 0.5f), y1 = fl_f8(t.v1.y + 0.5f);
-	const fixed8 x2 = fl_f8(t.v2.x + 0.5f), y2 = fl_f8(t.v2.y + 0.5f);
-	const fixed8 x3 = fl_f8(t.v3.x + 0.5f), y3 = fl_f8(t.v3.y + 0.5f);
+	const float x1 = t.v1.x, y1 = t.v1.y;
+	const float x2 = t.v2.x, y2 = t.v2.y;
+	const float x3 = t.v3.x, y3 = t.v3.y;
 
-	const float fy1 = t.v1.y + 0.5f;
-	const float fy2 = t.v2.y + 0.5f;
-	const float fy3 = t.v3.y + 0.5f;
 	const float z1 = 1.0f / t.v1.z, u1 = t.v1.u * z1 * tw, v1 = t.v1.v * z1 * th;
 	const float z2 = 1.0f / t.v2.z, u2 = t.v2.u * z2 * tw, v2 = t.v2.v * z2 * th;
 	const float z3 = 1.0f / t.v3.z, u3 = t.v3.u * z3 * tw, v3 = t.v3.v * z3 * th;
 
-	/*const float dz = ABS(MAX(z1, MAX(z2, z3)) - MIN(z1, MIN(z2, z3)));
-	int zstep;
-	float izstep;
-	if (dz < 0.00625f) {
-		zstep = 16;
-		izstep = 0.0625f;
-	} else if(dz < 0.0125f) {
-		zstep = 8;
-		izstep = 0.125f;
-	} else if (dz < 0.025f) {
-		zstep = 4;
-		izstep = 0.25f;
-	} else if (dz < 0.05f) {
-		zstep = 2;
-		izstep = 0.5f;
-	} else {
-		zstep = 1;
-		izstep = 1.0f;
-	}*/
-
 	bool xswap = false;
 
-	const float dy1 = 1.0f / (fy3 - fy1);
-
-	fixed8 sx2, sx1 = f8_div(x3 - x1, y3 - y1);
+	const float dy1 = 1.0f / (y3 - y1);
+	float sx2, sx1 = (x3 - x1) * dy1;
 	float sz2, sz1 = (z3 - z1) * dy1;
 	float su2, su1 = (u3 - u1) * dy1;
 	float sv2, sv1 = (v3 - v1) * dy1;
-	fixed8 xx2, xx1 = x1;
+	float xx2, xx1 = x1;
 	float zz2, zz1 = z1;
 	float uu2, uu1 = u1;
 	float vv2, vv1 = v1;
 
 	if (yy2 > yy1) {
-		const float dy2 = 1.0f / (fy2 - fy1);
-		sx2 = f8_div(x2 - x1, y2 - y1);
+		const float dy2 = 1.0f / (y2 - y1);
+		sx2 = (x2 - x1) * dy2;
 
 		if (sx2 < sx1) {
 			sz2 = sz1; sz1 = (z2 - z1) * dy2;
 			su2 = su1; su1 = (u2 - u1) * dy2;
 			sv2 = sv1; sv1 = (v2 - v1) * dy2;
 
-			SWAP(fixed8, sx1, sx2);
+			SWAP(&sx1, &sx2);
 			xswap = true;
 		} else {
 			sz2 = (z2 - z1) * dy2;
@@ -1298,17 +791,15 @@ void SoftwareRenderer::draw_triangle_texture(Triangle3uv &t) {
 		uu1 = u1; uu2 = u1;
 		vv1 = v1; vv2 = v1;
 
-		for (int y = yy1; y < yy2; ++y) {
-			Span* s = spans + y;
-			if (xx1 == xx2) {
-				s->x1 = 0;
-				s->x2 = 0;
-			} else {
-				s->x1 = f8_int(xx1); s->x2 = f8_int(xx2);
-				s->z1 = zz1; s->z2 = zz2;
-				s->u1 = uu1; s->u2 = uu2;
-				s->v1 = vv1; s->v2 = vv2;
-			}
+		int ye = yy2 - 1;
+		for (int y = yy1; y <= ye; ++y) {
+			const float dx = 1.0f / (xx2 - xx1);
+
+			Span *s = &spans[y];
+			s->x1 = CEIL(xx1); s->x2 = FLOOR(xx2);
+			s->z = zz1; s->sz = (zz2 - zz1) * dx;
+			s->u = uu1; s->su = (uu2 - uu1) * dx;
+			s->v = vv1; s->sv = (vv2 - vv1) * dx;
 
 			xx1 += sx1; xx2 += sx2;
 			zz1 += sz1; zz2 += sz2;
@@ -1330,11 +821,11 @@ void SoftwareRenderer::draw_triangle_texture(Triangle3uv &t) {
 		vv2 = v1; sv2 = sv1;
 	}
 
-	if (yy3 >= yy2) {
-		const float dy2 = 1.0f / (fy3 - fy2);
+	if (yy3 > yy2) {
+		const float dy2 = 1.0f / (y3 - y2);
 
 		if (xswap) {
-			sx2 = sx1; sx1 = f8_div(x3 - x2, y3 - y2);
+			sx2 = sx1; sx1 = (x3 - x2) * dy2;
 			sz2 = sz1; sz1 = (z3 - z2) * dy2;
 			su2 = su1; su1 = (u3 - u2) * dy2;
 			sv2 = sv1; sv1 = (v3 - v2) * dy2;
@@ -1344,7 +835,7 @@ void SoftwareRenderer::draw_triangle_texture(Triangle3uv &t) {
 			uu1 = u2;
 			vv1 = v2;
 		} else {
-			sx2 = f8_div(x3 - x2, y3 - y2);
+			sx2 = (x3 - x2) * dy2;
 			sz2 = (z3 - z2) * dy2;
 			su2 = (u3 - u2) * dy2;
 			sv2 = (v3 - v2) * dy2;
@@ -1356,16 +847,13 @@ void SoftwareRenderer::draw_triangle_texture(Triangle3uv &t) {
 		}
 
 		for (int y = yy2; y <= yy3; ++y) {
-			Span* s = spans + y;
-			if (xx1 == xx2) {
-				s->x1 = 0;
-				s->x2 = 0;
-			} else {
-				s->x1 = f8_int(xx1); s->x2 = f8_int(xx2);
-				s->z1 = zz1; s->z2 = zz2;
-				s->u1 = uu1; s->u2 = uu2;
-				s->v1 = vv1; s->v2 = vv2;
-			}
+			const float dx = 1.0f / (xx2 - xx1);
+
+			Span *s = &spans[y];
+			s->x1 = CEIL(xx1); s->x2 = FLOOR(xx2);
+			s->z = zz1; s->sz = (zz2 - zz1) * dx;
+			s->u = uu1; s->su = (uu2 - uu1) * dx;
+			s->v = vv1; s->sv = (vv2 - vv1) * dx;
 
 			xx1 += sx1; xx2 += sx2;
 			zz1 += sz1; zz2 += sz2;
@@ -1374,47 +862,36 @@ void SoftwareRenderer::draw_triangle_texture(Triangle3uv &t) {
 		}
 	}
 
-	ulong *ybits = buffer->bits + buffer->width * yy1;
+	const ulong pitch = buffer->width;
+	ulong *ybits = buffer->bits + yy1 * pitch;
+
 	for (int y = yy1; y <= yy3; ++y) {
-		Span* s = spans + y;
+		const Span *s = &spans[y];
+		const int xs = s->x1;
+		const int xe = s->x2;
 
-		if (s->x2 == s->x1) {
-			ybits += buffer->width;
-			continue;
+		const float sz = s->sz;
+		const float su = s->su;
+		const float sv = s->sv;
+
+		float z = s->z;
+		float u = s->u;
+		float v = s->v;
+
+		for (int x = xs; x <= xe; ++x) {
+			const float zp = 1.0f / z;
+			int iu = (int)(u * zp); //iu = CLAMP(iu, 0, tw);
+			int iv = (int)(v * zp); //iv = CLAMP(iv, 0, th);
+			
+			const ulong c = *(tdata + tpitch * iv + iu);
+			ybits[x] = c;
+
+			z += sz;
+			u += su;
+			v += sv;
 		}
 
-		//draw_span(s, ybits, texture);
-
-		const int xl = s->x2 - s->x1;
-		const float dx = 1.0f / (float)xl;
-		const float szx = (s->z2 - s->z1) * dx;
-		const float sux = (s->u2 - s->u1) * dx;
-		const float svx = (s->v2 - s->v1) * dx;
-
-		float zx = s->z1;
-		float ux = s->u1;
-		float vx = s->v1;
-
-		ulong *xbits = ybits + s->x1;
-		ulong *xlen = xbits + xl;
-
-		for (int i = 0, ilen = CEIL(xl / 4.0f); i <= ilen; ++i) {
-			const float zp = 1.0f / zx;
-
-			for (ulong *xxlen = MIN(xbits + 4, xlen); xbits <= xxlen; ++xbits) {
-				int iu = (int)(ux * zp); /*iu = WRAP(iu, 0, tw);*/ iu = CLAMP(iu, 0, tw);
-				int iv = (int)(vx * zp); /*iv = WRAP(iv, 0, th);*/ iv = CLAMP(iv, 0, th);
-
-				const ulong c = *(tdata + tw * iv + iu);
-				*(xbits) = c;
-
-				zx += szx;
-				ux += sux;
-				vx += svx;
-			}
-		}
-
-		ybits += buffer->width;
+		ybits += pitch;
 	}
 }
 

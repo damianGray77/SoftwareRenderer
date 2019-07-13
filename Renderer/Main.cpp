@@ -109,12 +109,16 @@ void init_lookups() {
 void run() {
 	do {
 		fps.update();
+
+		// input
 		if (!window.update()) { running = false; }
 
 		if (!paused) {
+			// simulate
 			update();
 
 			if (fps.update_frame) {
+				// render
 				draw();
 			}
 		}

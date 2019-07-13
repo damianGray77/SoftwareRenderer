@@ -27,6 +27,7 @@ public:
 	LPCWSTR cname;
 	LPCWSTR wname;
 	int cores;
+	bool open;
 
 	bool (*resize_callback)(int, int);
 	void (*draw)();

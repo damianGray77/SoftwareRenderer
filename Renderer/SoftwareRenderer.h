@@ -34,13 +34,12 @@ public:
 
 	void draw_line(const Vertex2 &, const Vertex2 &, const ulong);
 	void draw_triangle_flat(Vertex2 &, Vertex2 &, Vertex2 &, const ulong);
-	void draw_triangle_flat_fixed(Vertex2 &, Vertex2 &, Vertex2 &, const ulong);
-	void draw_triangle_color(Vertex2c &, Vertex2c &, Vertex2c &);
 	void draw_triangle_texture(Vertex2uv &, Vertex2uv &, Vertex2uv &, const int);
-	void draw_triangle_texture(Triangle3uv &);
+	void draw_triangle_texture_a(Triangle3uv &);
+	void draw_triangle_texture_p(Triangle3uv &);
 	void draw_bitmap(const Vertex2 &, const int);
 
-	void draw_quad_flat(Vertex2 &, Vertex2 &, Vertex2 &, Vertex2 &, const ulong);
+	//void draw_quad_flat(Vertex2 &, Vertex2 &, Vertex2 &, Vertex2 &, const ulong);
 
 
 	bool load_textures();
