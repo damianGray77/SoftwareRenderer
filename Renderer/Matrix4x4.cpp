@@ -27,12 +27,12 @@ Matrix4x4 Matrix4x4::operator -(const Matrix4x4 &m) const {
 
 Matrix4x4 Matrix4x4::operator *(const Matrix4x4 &m) const {
 	Matrix4x4 r;
-	float e1, e2, e3, e4;
+
 	for (int i = 0; i <= 3; ++i) {
-		e1 = m.matrix[i][0];
-		e2 = m.matrix[i][1];
-		e3 = m.matrix[i][2];
-		e4 = m.matrix[i][3];
+		float e1 = m.matrix[i][0];
+		float e2 = m.matrix[i][1];
+		float e3 = m.matrix[i][2];
+		float e4 = m.matrix[i][3];
 
 		r.matrix[i][0] = (e1 * _00) + (e2 * _10) + (e3 * _20) + (e4 * _30);
 		r.matrix[i][1] = (e1 * _01) + (e2 * _11) + (e3 * _21) + (e4 * _31);

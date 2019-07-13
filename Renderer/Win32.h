@@ -15,8 +15,10 @@ public:
 	HDC front_dc;
 	HDC back_dc;
 	HBITMAP dib;
-	BITMAPINFO info;
+	void **bits;
 
+	BITMAPINFO info;
+	MSG msg;
 	RECT rect;
 	ulong width;
 	ulong height;
@@ -25,8 +27,6 @@ public:
 	LPCWSTR cname;
 	LPCWSTR wname;
 	int cores;
-	Buffer *buffer;
-	MSG msg;
 
 	bool (*resize_callback)(int, int);
 	void (*draw)();

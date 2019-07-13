@@ -91,7 +91,7 @@ bool Win32::init_window() {
 
 	WNDCLASSEXW wc = {
 		  sizeof(WNDCLASSEX)
-		, CS_HREDRAW | CS_VREDRAW
+		, CS_HREDRAW | CS_VREDRAW | CS_OWNDC
 		, proc
 		, 0
 		, 0
@@ -156,12 +156,8 @@ bool Win32::init_buffer() {
 	info.bmiHeader.biHeight = -(long)height;
 	info.bmiHeader.biSizeImage = width * height * 4UL;
 
-	void *bits;
-
-	dib = CreateDIBSection(front_dc, &info, DIB_RGB_COLORS, &bits, NULL, 0);
+	dib = CreateDIBSection(front_dc, &info, DIB_RGB_COLORS, bits, NULL, 0);
 	if (NULL == dib) { return false; }
-
-	buffer->bits = (ulong *)bits;
 
 	back_dc = CreateCompatibleDC(front_dc);
 	if (NULL == back_dc) { return false; }
@@ -194,8 +190,6 @@ void Win32::unload_buffer() {
 		DeleteObject(dib);
 		dib = NULL;
 	}
-
-	buffer->unload();
 }
 
 bool Win32::full_screen() {

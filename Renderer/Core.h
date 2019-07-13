@@ -23,7 +23,9 @@
 typedef int fixed8;
 typedef int fixed12;
 typedef int fixed16;
+typedef int fixed20;
 typedef int fixed24;
+typedef int fixed28;
 
 typedef int64_t int64;
 typedef int32_t int32;
@@ -41,8 +43,18 @@ typedef unsigned int uint;
 typedef unsigned short ushort;
 typedef unsigned char uchar;
 
+
+const float fixed8_divisor = 1.0f / (1 << 8);
+const float fixed16_divisor = 1.0f / (1 << 16);
+const float fixed20_divisor = 1.0f / (1 << 20);
+const float fixed24_divisor = 1.0f / (1 << 24);
+
 inline fixed8 fl_f8(const float f) {
-	return (fixed8)(f * 256.0f);
+	return (fixed8)(f * (float)(1 << 8));
+}
+
+inline fixed8 int_f8(const int i) {
+	return (fixed8)(i << 8);
 }
 
 inline fixed8 f8_div(const fixed8 a, const fixed8 b) {
@@ -58,11 +70,13 @@ inline int f8_int(const fixed8 f) {
 }
 
 inline float f8_fl(const fixed8 f) {
-	return ((float)f) * 0.00390625f; // 1 / 256th
+	return f * fixed8_divisor;
 }
 
+
+
 inline fixed16 fl_f16(const float f) {
-	return (fixed16)(f * 65536.0f);
+	return (fixed16)(f * (float)(1 << 16));
 }
 
 inline fixed16 f16_div(const fixed16 a, const fixed16 b) {
@@ -78,8 +92,54 @@ inline int f16_int(const fixed16 f) {
 }
 
 inline float f16_fl(const fixed16 f) {
-	return ((float)f) * 0.0000152587890625f; // 1 / 65536th
+	return f * fixed16_divisor;
 }
+
+
+inline fixed20 fl_f20(const float f) {
+	return (fixed20)(f * (float)(1 << 20));
+}
+
+inline fixed20 f20_div(const fixed20 a, const fixed20 b) {
+	return (((long long)a) << 20) / b;
+}
+
+inline fixed20 f20_mul(const fixed20 a, const fixed20 b) {
+	return (fixed20)((((long long)a) * ((long long)b)) >> 20);
+}
+
+inline int f20_int(const fixed20 f) {
+	return f >> 20;
+}
+
+inline float f20_fl(const fixed20 f) {
+	return f * fixed20_divisor;
+}
+
+
+
+inline fixed28 fl_f28(const float f) {
+	return (fixed28)(f * 268435456.0f);
+}
+
+inline fixed28 f28_div(const fixed28 a, const fixed28 b) {
+	return (((long long)a) << 28) / b;
+}
+
+inline fixed8 f28_mul(const fixed28 a, const fixed28 b) {
+	return (a * b) >> 28;
+}
+
+inline int f28_int(const fixed28 f) {
+	return f >> 28;
+}
+
+inline float f28_fl(const fixed28 f) {
+	return f * fixed24_divisor;
+}
+
+
+
 
 
 #define RGBAb(r, g, b, a) (((ulong)a) << 24 | ((ulong)r) << 16 | ((ulong)g) << 8 | ((ulong)b))
