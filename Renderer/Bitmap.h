@@ -4,8 +4,6 @@
 
 #include <stdio.h>
 
-//#ifndef WIN32
-
 #pragma pack(push, bitmap_data, 1)
 
 struct BMPFileHeader {

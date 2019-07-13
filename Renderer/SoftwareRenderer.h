@@ -13,6 +13,7 @@
 #include "Triangle3uv.h"
 #include "Matrix4x4.h"
 #include "Bitmap.h"
+#include "Texture.h"
 #include <vector>
 
 class SoftwareRenderer {
@@ -73,7 +74,7 @@ public:
 	Span *spans;
 	int cp1len, cp2len;
 
-	Bitmap **textures;
+	Texture **textures;
 };
 
 #endif

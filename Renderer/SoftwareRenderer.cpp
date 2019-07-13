@@ -48,12 +48,15 @@ bool SoftwareRenderer::init() {
 }
 
 bool SoftwareRenderer::load_textures() {
-	int len =	1;
+	// TODO: remove hardcoded value
+	int len = 1;
 
-	textures = new Bitmap*[len];
+	textures = new Texture*[len];
 
 	for (int i = 0; i < len; ++i) {
-		textures[i] = new Bitmap(texture_files[i]);
+		Bitmap *bmp = new Bitmap(texture_files[i]);
+		textures[i] = Texture::load_from_bitmap(*(bmp));
+		bmp->unload();
 	}
 
 	return true;
@@ -257,7 +260,7 @@ void SoftwareRenderer::render() {
 	int tlen = backfacecull_and_clip();
 	float itlen = 1.0f / (float)tlen; 
 	for(int i = 0; i < tlen; ++i) {
-		draw_triangle_texture_a(ctris[i]);
+		draw_triangle_texture_p(ctris[i]);
 
 		
 		//float c = (float)(i + 1) * itlen;
@@ -596,12 +599,9 @@ void SoftwareRenderer::draw_triangle_texture_a(Triangle3uv &t) {
 
 	if (yy3 <= yy1) { return; }
 
-	Bitmap *texture = textures[t.texture_id];
-	const int tpitch = texture->w;
-	const int tw = texture->w - 1;
-	const int th = texture->h - 1;
-	const int *toffs = texture->yoffs;
-	const ulong *tdata = texture->data;
+	Texture *texture = textures[t.texture_id];
+	const int tw = texture->width;
+	const int th = texture->height;
 
 	const float x1 = t.v1.x, y1 = t.v1.y;
 	const float x2 = t.v2.x, y2 = t.v2.y;
@@ -717,11 +717,10 @@ void SoftwareRenderer::draw_triangle_texture_a(Triangle3uv &t) {
 		float v = s->v;
 
 		for (int x = xs; x <= xe; ++x) {
-			int iu = (int)u; //iu = CLAMP(iu, 0, tw);
-			int iv = (int)v; //iv = CLAMP(iv, 0, th);
+			const int iu = (int)u;
+			const int iv = (int)v;
 
-			const ulong c = *(tdata + tpitch * iv + iu);
-			ybits[x] = c;
+			ybits[x] = texture->point(iv, iu);
 
 			u += su;
 			v += sv;
@@ -742,12 +741,9 @@ void SoftwareRenderer::draw_triangle_texture_p(Triangle3uv &t) {
 
 	if (yy3 <= yy1) { return; }
 
-	Bitmap *texture = textures[t.texture_id];
-	const int tpitch = texture->w;
-	const int tw = texture->w - 1;
-	const int th = texture->h - 1;
-	const int *toffs = texture->yoffs;
-	const ulong *tdata = texture->data;
+	Texture *texture = textures[t.texture_id];
+	const int tw = texture->width;
+	const int th = texture->height;
 
 	const float x1 = t.v1.x, y1 = t.v1.y;
 	const float x2 = t.v2.x, y2 = t.v2.y;
@@ -880,11 +876,10 @@ void SoftwareRenderer::draw_triangle_texture_p(Triangle3uv &t) {
 
 		for (int x = xs; x <= xe; ++x) {
 			const float zp = 1.0f / z;
-			int iu = (int)(u * zp); //iu = CLAMP(iu, 0, tw);
-			int iv = (int)(v * zp); //iv = CLAMP(iv, 0, th);
-			
-			const ulong c = *(tdata + tpitch * iv + iu);
-			ybits[x] = c;
+			const uint iu = (int)(u * zp);
+			const uint iv = (int)(v * zp);
+
+			ybits[x] = texture->point(iu, iv);
 
 			z += sz;
 			u += su;
@@ -896,10 +891,11 @@ void SoftwareRenderer::draw_triangle_texture_p(Triangle3uv &t) {
 }
 
 void SoftwareRenderer::draw_bitmap(const Vertex2 &v, const int tid) {
-	Bitmap *texture = textures[tid];
+	Texture *texture = textures[tid];
 
-	const int w = texture->w - 1;
-	const int h = texture->h - 1;
+	const uint pitch = texture->pitch;
+	const int w = texture->width;
+	const int h = texture->height;
 
 	ulong *ybits = buffer->bits + yoffs[(int)v.y];
 	ulong *xbits;
@@ -908,7 +904,7 @@ void SoftwareRenderer::draw_bitmap(const Vertex2 &v, const int tid) {
 		xbits = ybits + (int)v.x;
 
 		for (int x = 0; x <= w; ++x) {
-			*(xbits + x) = *(texture->data + texture->yoffs[y] + x);
+			*(xbits + x) = *(texture->bits + pitch * y + x);
 		}
 
 		ybits += buffer->width;
