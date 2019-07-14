@@ -73,7 +73,7 @@ bool Win32::init() {
 		return false;
 	}
 
-	ShowWindow(window, SW_SHOWNORMAL);
+	ShowWindow(window, fullscreen ? SW_SHOWMAXIMIZED : SW_SHOWNORMAL);
 	UpdateWindow(window);
 
 	SetFocus(window);
@@ -119,9 +119,9 @@ bool Win32::init_window() {
 	} else {
 		style = WS_OVERLAPPEDWINDOW | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
 		style_ex = WS_EX_CLIENTEDGE;
-	}
 
-	AdjustWindowRectEx(&rect, style, false, style_ex);
+		AdjustWindowRectEx(&rect, style, false, style_ex);
+	}
 
 	window = CreateWindowExW(style_ex, wc.lpszClassName, wname, style, CW_USEDEFAULT, CW_USEDEFAULT, rect.right - rect.left, rect.bottom - rect.top, NULL, NULL, wc.hInstance, NULL);
 	if (!window) { return false; }

@@ -27,6 +27,7 @@ Texture* Texture::load_from_bitmap(Bitmap &bitmap) {
 	ulong *bybits = bitmap.data;
 	for (uint y = 0, ylen = h - 1; y <= ylen; ++y) {
 		for(uint x = 0, xlen = w - 1; x <= xlen; ++x) {
+			//*t->tile_point(x, y) = bybits[x];
 			tybits[x] = bybits[x];
 		}
 

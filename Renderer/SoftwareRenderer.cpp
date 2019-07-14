@@ -876,10 +876,11 @@ void SoftwareRenderer::draw_triangle_texture_p(Triangle3uv &t) {
 
 		for (int x = xs; x <= xe; ++x) {
 			const float zp = 1.0f / z;
-			const uint iu = (int)(u * zp);
-			const uint iv = (int)(v * zp);
-
-			ybits[x] = texture->point(iu, iv);
+			//uint iu = (int)(u * zp); //iu = WRAP(iu, 0, tw);
+			//uint iv = (int)(v * zp); //iv = WRAP(iv, 0, th);
+			
+			//ybits[x] = texture->point(iu, iv);
+			ybits[x] = texture->bi_point(u * zp, v * zp);
 
 			z += sz;
 			u += su;

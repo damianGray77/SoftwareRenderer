@@ -6,7 +6,6 @@
 #include "Edge3uv.h"
 #include "Triangle3t.h"
 #include <vector>
-#include <emmintrin.h>
 
 #define EPSILON 0 //1e-4
 #define PI 3.14159265358f
