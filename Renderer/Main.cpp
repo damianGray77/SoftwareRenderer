@@ -17,6 +17,7 @@ int main(int argc, char *argv[]) {
 	window.resize_callback = resize;
 	window.keypress_callback = keypress;
 	window.draw = draw;
+	fps.get_system_ticks = Win32::get_system_ticks;
 
 	if (
 		renderer.init()
@@ -25,7 +26,7 @@ int main(int argc, char *argv[]) {
 	) {
 		camera.set_pos(0.0f, 0.0f, 9.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 
-		fps.init(&window);
+		fps.init();
 		//fps.set_rate(60);
 
 		run();

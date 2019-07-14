@@ -51,8 +51,11 @@ public:
 	bool update();
 
 	void close();
-	ulong get_system_ticks();
 	void set_title(wchar_t *);
+
+	static inline ulong get_system_ticks() {
+		return timeGetTime();
+	}
 private:
 	LRESULT CALLBACK _proc(HWND, uint, WPARAM, LPARAM);
 };

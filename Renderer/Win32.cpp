@@ -61,7 +61,7 @@ bool Win32::init() {
 	timeBeginPeriod(1);
 
 	HWND console = GetConsoleWindow();
-	ShowWindow(console, SW_HIDE);
+	ShowWindow(console, SW_SHOW); // SW_HIDE);
 
 	if (!init_window()) {
 		MessageBoxW(window, L"Cannot init window!", L"Error", MB_OK | MB_ICONERROR);
@@ -251,10 +251,6 @@ bool Win32::update() {
 
 void Win32::close() {
 	SendMessageW(window, WM_CLOSE, 0, 0);
-}
-
-ulong Win32::get_system_ticks() {
-	return timeGetTime();
 }
 
 void Win32::set_title(wchar_t *str) {	

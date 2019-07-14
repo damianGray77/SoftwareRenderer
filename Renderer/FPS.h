@@ -2,8 +2,6 @@
 #ifndef FPS_H
 #define FPS_H
 
-#include "Win32.h"
-
 class FPS {
 	ulong frames_since;
 	ulong last_calc_ticks;
@@ -14,15 +12,12 @@ class FPS {
 	ulong seconds;
 
 	float target;
-
-	wchar_t frame_rate[50];
-	uint str_size;
-
-	Win32 *window;
 public:
 	bool update_frame;
 
-	void init(Win32 *);
+	ulong(*get_system_ticks)();
+
+	void init();
 	void set_rate(const int);
 	void update();
 };

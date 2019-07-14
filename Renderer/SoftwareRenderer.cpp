@@ -717,10 +717,11 @@ void SoftwareRenderer::draw_triangle_texture_a(Triangle3uv &t) {
 		float v = s->v;
 
 		for (int x = xs; x <= xe; ++x) {
-			const int iu = (int)u;
-			const int iv = (int)v;
+			//const int iu = (int)u;
+			//const int iv = (int)v;
 
-			ybits[x] = texture->point(iv, iu);
+			//ybits[x] = texture->point(iv, iu);
+			ybits[x] = texture->bi_point(u, v);
 
 			u += su;
 			v += sv;
