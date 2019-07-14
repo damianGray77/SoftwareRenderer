@@ -6,7 +6,7 @@
 #include "Win32.h"
 #include "FPS.h"
 #include "Camera.h"
-#include "Vertex3uv.h"
+#include "Vertex3uvc.h"
 #include "Edge3uv.h"
 #include "SoftwareRenderer.h"
 

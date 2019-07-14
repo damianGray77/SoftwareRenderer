@@ -14,3 +14,4 @@
 *.opendb
 *.db
 .vs/SoftwareRenderer/v15/.suo
+*.enc

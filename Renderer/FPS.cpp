@@ -4,7 +4,7 @@
 
 void FPS::init() {
 	frames_since = 0;
-	last_calc_ticks = 0;
+	next_calc_ticks = get_system_ticks() + 1000;
 	last_ticks = get_system_ticks();
 	frame_ticks = 0;
 	current_ticks = 0;
@@ -33,13 +33,13 @@ void FPS::update() {
 		update_frame = false;
 	}
 
-	if (current_ticks - last_calc_ticks > 1000) {
-		last_calc_ticks = current_ticks;
+	if (current_ticks >= next_calc_ticks) {
+		++seconds;
+		next_calc_ticks = current_ticks + 1000;
 		total_frames += frames_since;
 
 		printf("FPS: %d Avg.: %d Ms/F: %f\n", frames_since, CEIL(total_frames / (float)seconds), 1000.0f / frames_since);
 
 		frames_since = 0;
-		++seconds;
 	}
 }

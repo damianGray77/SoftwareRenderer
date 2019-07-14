@@ -4,7 +4,7 @@
 
 class FPS {
 	ulong frames_since;
-	ulong last_calc_ticks;
+	ulong next_calc_ticks;
 	ulong last_ticks;
 	float frame_ticks;
 	ulong current_ticks;

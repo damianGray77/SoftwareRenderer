@@ -8,9 +8,11 @@
 #include "Vertex2.h"
 #include "Vertex2c.h"
 #include "Vertex2uv.h"
+#include "Vertex3c.h"
 #include "Vertex3uv.h"
 #include "Triangle3t.h"
 #include "Triangle3uv.h"
+#include "Triangle3uvc.h"
 #include "Matrix4x4.h"
 #include "Bitmap.h"
 #include "Texture.h"
@@ -31,13 +33,16 @@ public:
 	void set_fov(float);
 	void set_clip(long, long);
 	void recalc_dist();
-	void project(const int, const Matrix4x4 &);
+	void project_vert(const int, const Matrix4x4 &);
+	void project_light(const int, const Matrix4x4 &);
+	void calculate_normals(Matrix4x4 &w);
+	void calculate_lights();
 
 	void draw_line(const Vertex2 &, const Vertex2 &, const ulong);
 	void draw_triangle_flat(Vertex2 &, Vertex2 &, Vertex2 &, const ulong);
 	void draw_triangle_texture(Vertex2uv &, Vertex2uv &, Vertex2uv &, const int);
 	void draw_triangle_texture_a(Triangle3uv &);
-	void draw_triangle_texture_p(Triangle3uv &);
+	void draw_triangle_texture_p(Triangle3uvc &);
 	void draw_bitmap(const Vertex2 &, const int);
 
 	//void draw_quad_flat(Vertex2 &, Vertex2 &, Vertex2 &, Vertex2 &, const ulong);
@@ -64,13 +69,14 @@ public:
 
 	Vertex2 *bounds;
 
-	Triangle3uv ctris[255];
-	std::vector<Vertex3uv> cverts;
+	Triangle3uvc ctris[255];
+	std::vector<Vertex3> tnormals;
+	std::vector<Vertex3uvc> cverts;
 	std::vector<Edge3uv> cedges;
 	std::vector<uint> edge_map;
 
-	Vertex3uv *clip_poly1;
-	Vertex3uv *clip_poly2;
+	Vertex3uvc *clip_poly1;
+	Vertex3uvc *clip_poly2;
 	Span *spans;
 	int cp1len, cp2len;
 

@@ -1,12 +1,16 @@
 #include "stdafx.h"
 #include "Core.h"
 
-std::vector<Vertex3uv> verts;
+std::vector<Vertex3c> lights;
+std::vector<Vertex3> wlights;
+std::vector<Vertex3c> slights;
+std::vector<Vertex3uvc> verts;
 std::vector<Vertex3> wverts;
-std::vector<Vertex3uv> sverts;
+std::vector<Vertex3uvc> sverts;
+std::vector<Vertex3> vnormals;
 std::vector<Triangle3t> tris;
 
-const char *texture_files[] = { "texture.bmp" };
+const char *texture_files[] = { "t2.bmp" };
 
 float sins[SINCOSMAX] = { 0 };
 float coss[SINCOSMAX] = { 0 };

@@ -2,7 +2,8 @@
 #ifndef CORE_H
 #define CORE_H
 
-#include "Vertex3uv.h"
+#include "Vertex3uvc.h"
+#include "Vertex3c.h"
 #include "Edge3uv.h"
 #include "Triangle3t.h"
 #include <vector>
@@ -10,22 +11,6 @@
 #define EPSILON 0 //1e-4
 #define PI 3.14159265358f
 #define SINCOSMAX 32767
-
-template <class T>
-inline void SWAP(T *a, T *b) {
-	T temp = *a;
-	*a = *b;
-	*b = temp;
-}
-
-//#define SWAP(type, i, j) { type _temp_var = i; i = j; j = _temp_var; }
-#define ABS(x) ((x) < 0 ? -(x) : (x))
-#define CEIL(f) ((int)(f) + (f > (int)(f)))
-#define FLOOR(f) ((int)(f) - (f < (int)(f)))
-#define MIN(x, y) (x <= y ? x : y)
-#define MAX(x, y) (x >= y ? x : y)
-#define CLAMP(x, min, max) (x <= min ? min : x >= max ? max : x)
-#define WRAP(x, min, max) (x <= min ? x + max : x >= max ? x - max : x)
 
 typedef int fixed8;
 typedef int fixed12;
@@ -49,6 +34,22 @@ typedef unsigned long ulong;
 typedef unsigned int uint;
 typedef unsigned short ushort;
 typedef unsigned char uchar;
+
+template <class T>
+inline void SWAP(T *a, T *b) {
+	T temp = *a;
+	*a = *b;
+	*b = temp;
+}
+
+//#define SWAP(type, i, j) { type _temp_var = i; i = j; j = _temp_var; }
+#define ABS(x) ((x) < 0 ? -(x) : (x))
+#define CEIL(f) ((int)(f) + (f > (int)(f)))
+#define FLOOR(f) ((int)(f) - (f < (int)(f)))
+#define MIN(x, y) (x <= y ? x : y)
+#define MAX(x, y) (x >= y ? x : y)
+#define CLAMP(x, min, max) (x <= min ? min : x >= max ? max : x)
+#define WRAP(x, min, max) (x <= min ? x + max : x >= max ? x - max : x)
 
 
 const float fixed8_divisor = 1.0f / (1 << 8);
@@ -165,9 +166,13 @@ extern float coss[SINCOSMAX];
 extern float isins[SINCOSMAX];
 extern float icoss[SINCOSMAX];
 
-extern std::vector<Vertex3uv> verts;
+extern std::vector<Vertex3c> lights;
+extern std::vector<Vertex3> wlights;
+extern std::vector<Vertex3c> slights;
+extern std::vector<Vertex3uvc> verts;
 extern std::vector<Vertex3> wverts;
-extern std::vector<Vertex3uv> sverts;
+extern std::vector<Vertex3uvc> sverts;
+extern std::vector<Vertex3> vnormals;
 extern std::vector<Triangle3t> tris;
 
 extern const char *texture_files[];

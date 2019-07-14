@@ -43,12 +43,14 @@
     <ClInclude Include="Triangle3t.h" />
     <ClInclude Include="Triangle3c.h" />
     <ClInclude Include="Triangle3uv.h" />
+    <ClInclude Include="Triangle3uvc.h" />
     <ClInclude Include="Vertex2.h" />
     <ClInclude Include="Vertex2c.h" />
     <ClInclude Include="Vertex2uv.h" />
     <ClInclude Include="Vertex3.h" />
     <ClInclude Include="Vertex3c.h" />
     <ClInclude Include="Vertex3uv.h" />
+    <ClInclude Include="Vertex3uvc.h" />
     <ClInclude Include="Win32.h" />
   </ItemGroup>
   <ItemGroup>
@@ -79,12 +81,14 @@
     <ClCompile Include="Triangle3t.cpp" />
     <ClCompile Include="Triangle3c.cpp" />
     <ClCompile Include="Triangle3uv.cpp" />
+    <ClCompile Include="Triangle3uvc.cpp" />
     <ClCompile Include="Vertex2.cpp" />
     <ClCompile Include="Vertex2c.cpp" />
     <ClCompile Include="Vertex2uv.cpp" />
     <ClCompile Include="Vertex3.cpp" />
     <ClCompile Include="Vertex3c.cpp" />
     <ClCompile Include="Vertex3uv.cpp" />
+    <ClCompile Include="Vertex3uvc.cpp" />
     <ClCompile Include="Win32.cpp" />
   </ItemGroup>
   <ItemGroup>

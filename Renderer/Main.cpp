@@ -45,13 +45,18 @@ void init() {
 }
 
 void init_geom() {
+	lights.reserve(255);
+	wlights.reserve(255);
+	slights.reserve(255);
+
 	verts.reserve(255);
 	wverts.reserve(255);
 	sverts.reserve(255);
+	vnormals.reserve(255);
 
 	tris.reserve(255);
 
-	Vertex3uv v1, v2, v3, v4, v5, v6, v7, v8;
+	Vertex3uvc v1, v2, v3, v4, v5, v6, v7, v8;
 
 	v1.x =  1.0f; v1.y =  1.0f; v1.z =  1.0f; v1.u = 0.0f; v1.v = 0.0f;
 	v2.x =  1.0f; v2.y =  1.0f; v2.z = -1.0f; v2.u = 1.0f; v2.v = 0.0f;
@@ -72,24 +77,44 @@ void init_geom() {
 	verts.push_back(v8);
 
 	for(int i = 0; i < 8; ++i) {
-		Vertex3uv v1, v2;
+		Vertex3uvc v1, v2;
+		Vertex3 v3;
 
 		wverts.push_back(v1);
 		sverts.push_back(v2);
+		vnormals.push_back(v3);
 	}
 
-	tris.push_back({ 0, 1, 2, 0 });
-	tris.push_back({ 1, 3, 2, 0 });
-	tris.push_back({ 1, 5, 3, 0 });
-	tris.push_back({ 5, 7, 3, 0 });
-	tris.push_back({ 5, 4, 7, 0 });
-	tris.push_back({ 4, 6, 7, 0 });
-	tris.push_back({ 4, 0, 6, 0 });
-	tris.push_back({ 0, 2, 6, 0 });
-	tris.push_back({ 3, 7, 2, 0 });
-	tris.push_back({ 7, 6, 2, 0 });
-	tris.push_back({ 1, 0, 5, 0 });
-	tris.push_back({ 0, 4, 5, 0 });
+	tris.push_back({ 1, 0, 2, 0 });
+	tris.push_back({ 3, 1, 2, 0 });
+	tris.push_back({ 5, 1, 3, 0 });
+	tris.push_back({ 7, 5, 3, 0 });
+	tris.push_back({ 4, 5, 7, 0 });
+	tris.push_back({ 6, 4, 7, 0 });
+	tris.push_back({ 0, 4, 6, 0 });
+	tris.push_back({ 2, 0, 6, 0 });
+	tris.push_back({ 7, 3, 2, 0 });
+	tris.push_back({ 6, 7, 2, 0 });
+	tris.push_back({ 0, 1, 5, 0 });
+	tris.push_back({ 4, 0, 5, 0 });
+
+	Vertex3c l1;
+	l1.x = 0.0f; l1.y = 1.0f; l1.z = 2.0f; l1.r = 1.0f; l1.g = 0.0f; l1.b = 0.0f;
+	lights.push_back(l1);
+
+	Vertex3c l2;
+	l2.x = 0.0f; l2.y = -1.0f; l2.z = -2.0f; l2.r = 0.0f; l2.g = 1.0f; l2.b = 1.0f;
+	lights.push_back(l2);
+
+	Vertex3c l3;
+	l3.x = 0.0f; l3.y = 0.0f; l3.z = -3.0f; l3.r = 0.0f; l3.g = 1.0f; l3.b = 0.0f;
+	lights.push_back(l3);
+
+	for (int i = 0; i < 3; ++i) {
+		Vertex3c l1, l2;
+		wlights.push_back(l1);
+		slights.push_back(l2);
+	}
 }
 
 void init_lookups() {
@@ -109,12 +134,12 @@ void init_lookups() {
 
 void run() {
 	do {
-		fps.update();
-
 		// input
 		if (!window.update()) { running = false; }
 
 		if (!paused) {
+			fps.update();
+
 			// simulate
 			update();
 

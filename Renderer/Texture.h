@@ -10,7 +10,8 @@ public:
 	void unload();
 
 	inline ulong point(uint x, uint y) {
-		return *tile_point(x, y);
+		return *(bits + y * pitch + x);
+		//return *tile_point(x, y);
 	}
 
 	inline ulong *tile_point(uint x, uint y) {
